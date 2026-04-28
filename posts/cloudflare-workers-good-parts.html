@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloudflare Workers: The Good Parts — Itamar Cohen</title>
+  <meta name="description" content="Workers are underrated. Here's the mental model that unlocked Cloudflare's edge platform for me." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root { --background: oklch(0.095 0 0); --foreground: oklch(0.97 0 0); --muted: oklch(0.18 0 0); --muted-foreground: oklch(0.55 0 0); --border: oklch(0.22 0 0); --accent: oklch(0.65 0.18 250); --radius: 0.625rem; }
+    body { background-color: var(--background); color: var(--foreground); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .nav-link { color: var(--muted-foreground); font-size: 0.875rem; transition: color 150ms; }
+    .nav-link:hover { color: var(--foreground); }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 999px; background: oklch(0.22 0 0); color: oklch(0.65 0.18 250); border: 1px solid oklch(0.65 0.18 250 / 0.25); }
+    .prose { max-width: 65ch; }
+    .prose h2 { font-size: 1.35rem; font-weight: 600; margin: 2.5rem 0 1rem; color: var(--foreground); }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 0.75rem; color: oklch(0.85 0 0); }
+    .prose p { margin: 0 0 1.25rem; line-height: 1.8; color: oklch(0.68 0 0); font-size: 1rem; }
+    .prose ul { margin: 0 0 1.25rem 1.5rem; list-style: disc; }
+    .prose ul li { margin-bottom: 0.5rem; line-height: 1.7; color: oklch(0.68 0 0); }
+    .prose strong { color: var(--foreground); font-weight: 600; }
+    .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: oklch(0.18 0 0); padding: 0.15em 0.4em; border-radius: 4px; color: oklch(0.75 0.1 250); }
+    .prose pre { background: oklch(0.13 0 0); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1.25rem; overflow-x: auto; margin: 1.5rem 0; }
+    .prose pre code { background: none; padding: 0; font-size: 0.875rem; color: oklch(0.78 0 0); }
+    .prose blockquote { border-left: 2px solid oklch(0.65 0.18 250); padding-left: 1.25rem; margin: 1.5rem 0; color: oklch(0.6 0 0); font-style: italic; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--background); } ::-webkit-scrollbar-thumb { background: oklch(0.3 0 0); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <header class="sticky top-0 z-50 border-b" style="background:oklch(0.095 0 0 / 0.8);backdrop-filter:blur(12px);border-color:var(--border);">
+    <nav class="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="/" class="font-semibold text-sm tracking-tight">itamarcohen<span style="color:oklch(0.65 0.18 250);">.com</span></a>
+      <div class="flex items-center gap-6">
+        <a href="/#posts" class="nav-link">Blog</a>
+        <a href="/#about" class="nav-link">About</a>
+        <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener" class="nav-link flex items-center gap-1.5">
+          <i data-lucide="github" style="width:14px;height:14px;"></i> GitHub
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-16">
+    <a href="/" class="nav-link flex items-center gap-1.5 text-sm mb-10 w-fit">
+      <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> All posts
+    </a>
+
+    <article>
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="tag">Cloudflare</span>
+          <span class="tag">Edge</span>
+          <time class="font-mono text-xs" style="color:var(--muted-foreground);">March 28, 2026</time>
+        </div>
+        <h1 class="text-4xl font-bold mb-4 leading-tight">Cloudflare Workers: The Good Parts</h1>
+        <p class="text-lg" style="color:oklch(0.58 0 0);">Workers are underrated. You can run code at the edge, store data in R2 and KV, and route traffic globally — all without managing servers. Here's the mental model that unlocked it for me.</p>
+      </div>
+
+      <div class="border-b mb-10" style="border-color:var(--border);"></div>
+
+      <div class="prose">
+
+        <p>I spent a long time thinking Cloudflare Workers were just a fancy CDN feature — something you'd use to rewrite headers or A/B test landing pages. Then I actually sat down and read the docs, and my understanding of "serverless" got completely reframed.</p>
+
+        <p>Workers aren't just edge functions. They're a full compute platform. Here's what clicked for me.</p>
+
+        <h2>The mental model</h2>
+
+        <p>Forget Lambda. Forget containers. A Worker is a <strong>V8 isolate</strong> — a tiny JavaScript runtime that starts in under a millisecond, runs your code, and gets destroyed. It runs in 300+ data centers simultaneously. There's no cold start in the traditional sense.</p>
+
+        <p>The programming model is dead simple:</p>
+
+        <pre><code>export default {
+  async fetch(request: Request, env: Env): Promise&lt;Response&gt; {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/hello") {
+      return Response.json({ message: "Hello from the edge" });
+    }
+
+    return new Response("Not found", { status: 404 });
+  },
+};</code></pre>
+
+        <p>That's it. It's just a <code>fetch</code> handler. You return a <code>Response</code>. Everything else is built on top of that.</p>
+
+        <h2>The storage primitives</h2>
+
+        <p>This is where Workers gets genuinely interesting. Cloudflare gives you three storage options, each with different tradeoffs:</p>
+
+        <ul>
+          <li><strong>KV (Key-Value)</strong> — Globally replicated, eventually consistent. Great for config, feature flags, cached content. Reads are fast everywhere; writes propagate in seconds.</li>
+          <li><strong>R2 (Object storage)</strong> — S3-compatible but zero egress fees. Use it anywhere you'd use S3. Works great for user uploads, static assets, generated files.</li>
+          <li><strong>Durable Objects</strong> — The weird one. Each object is a single-threaded stateful actor with its own storage, running in a specific location. Use it for real-time collaboration, rate limiting, or anything that needs strong consistency.</li>
+        </ul>
+
+        <p>For most apps, you'll only ever need KV and R2. Durable Objects are powerful but complex — save them for when you genuinely need coordinated state.</p>
+
+        <h2>What I use Workers for</h2>
+
+        <p>Here's my actual production usage:</p>
+
+        <ul>
+          <li><strong>API proxies</strong> — Add auth headers, rate limit, and cache responses before they hit my origin server</li>
+          <li><strong>Webhooks</strong> — Handle Telegram/GitHub webhook validation and fan-out at the edge</li>
+          <li><strong>Image transforms</strong> — Resize and optimize images on-the-fly using Cloudflare Images (Workers does the routing)</li>
+          <li><strong>Geo-routing</strong> — Serve different content or redirect users based on <code>request.cf.country</code></li>
+        </ul>
+
+        <h2>Tunnels: the missing piece</h2>
+
+        <p>Cloudflare Tunnel is what ties it all together for self-hosters. You run a small daemon (<code>cloudflared</code>) on your server, and it creates an encrypted outbound tunnel to Cloudflare's edge. No inbound ports. No firewall rules. Just:</p>
+
+        <pre><code>cloudflared tunnel create my-tunnel
+cloudflared tunnel route dns my-tunnel subdomain.yourdomain.com
+cloudflared tunnel run my-tunnel</code></pre>
+
+        <p>Your local service is now publicly accessible, proxied through Cloudflare, with DDoS protection and automatic HTTPS. I run n8n, Gitea, and a few other services this way. It's replaced every nginx reverse proxy config I ever wrote.</p>
+
+        <h2>The gotchas</h2>
+
+        <blockquote>Workers aren't Node.js. The runtime differences will bite you.</blockquote>
+
+        <ul>
+          <li>No <code>fs</code>, no <code>child_process</code>, no native modules — it's a browser-like runtime</li>
+          <li>CPU time limit of 10ms on the free plan (30s on paid). Long-running tasks need to be offloaded</li>
+          <li>KV is eventually consistent — don't use it for inventory or anything where reads must reflect the latest write immediately</li>
+          <li>Wrangler dev mode is good but not perfect — some behaviors only appear in production</li>
+        </ul>
+
+        <p>None of these are dealbreakers. They're just constraints that push you toward better architecture. Once you internalize them, the platform snaps into focus.</p>
+
+      </div>
+    </article>
+
+    <div class="border-t mt-16 pt-10 flex justify-between" style="border-color:var(--border);">
+      <a href="/posts/building-ai-agent-from-scratch.html" class="nav-link flex items-center gap-2 text-sm">
+        <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Previous
+      </a>
+      <a href="/posts/why-i-self-host-everything.html" class="nav-link flex items-center gap-2 text-sm">
+        Next: Why I Self-Host Everything <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+      </a>
+    </div>
+  </main>
+
+  <footer class="border-t mt-12" style="border-color:var(--border);">
+    <div class="max-w-4xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span class="font-mono text-xs" style="color:var(--muted-foreground);">© 2026 Itamar Cohen</span>
+      <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener" class="nav-link flex items-center gap-1.5 text-xs font-mono">
+        <i data-lucide="github" style="width:12px;height:12px;"></i> ItamarCoh3n
+      </a>
+    </div>
+  </footer>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building an AI Agent from Scratch — Itamar Cohen</title>
+  <meta name="description" content="Most AI agent tutorials start with LangChain. I started with a text file and a loop. Here's what I learned." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --background: oklch(0.095 0 0);
+      --foreground: oklch(0.97 0 0);
+      --muted: oklch(0.18 0 0);
+      --muted-foreground: oklch(0.55 0 0);
+      --border: oklch(0.22 0 0);
+      --accent: oklch(0.65 0.18 250);
+      --radius: 0.625rem;
+    }
+    body { background-color: var(--background); color: var(--foreground); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .nav-link { color: var(--muted-foreground); font-size: 0.875rem; transition: color 150ms; }
+    .nav-link:hover { color: var(--foreground); }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 999px; background: oklch(0.22 0 0); color: oklch(0.65 0.18 250); border: 1px solid oklch(0.65 0.18 250 / 0.25); }
+    .prose { max-width: 65ch; }
+    .prose h2 { font-size: 1.35rem; font-weight: 600; margin: 2.5rem 0 1rem; color: var(--foreground); }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 0.75rem; color: oklch(0.85 0 0); }
+    .prose p { margin: 0 0 1.25rem; line-height: 1.8; color: oklch(0.68 0 0); font-size: 1rem; }
+    .prose ul { margin: 0 0 1.25rem 1.5rem; list-style: disc; }
+    .prose ul li { margin-bottom: 0.5rem; line-height: 1.7; color: oklch(0.68 0 0); }
+    .prose strong { color: var(--foreground); font-weight: 600; }
+    .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: oklch(0.18 0 0); padding: 0.15em 0.4em; border-radius: 4px; color: oklch(0.75 0.1 250); }
+    .prose pre { background: oklch(0.13 0 0); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1.25rem; overflow-x: auto; margin: 1.5rem 0; }
+    .prose pre code { background: none; padding: 0; font-size: 0.875rem; color: oklch(0.78 0 0); }
+    .prose blockquote { border-left: 2px solid oklch(0.65 0.18 250); padding-left: 1.25rem; margin: 1.5rem 0; color: oklch(0.6 0 0); font-style: italic; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--background); } ::-webkit-scrollbar-thumb { background: oklch(0.3 0 0); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <header class="sticky top-0 z-50 border-b" style="background:oklch(0.095 0 0 / 0.8);backdrop-filter:blur(12px);border-color:var(--border);">
+    <nav class="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="/" class="font-semibold text-sm tracking-tight">itamarcohen<span style="color:oklch(0.65 0.18 250);">.com</span></a>
+      <div class="flex items-center gap-6">
+        <a href="/#posts" class="nav-link">Blog</a>
+        <a href="/#about" class="nav-link">About</a>
+        <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener" class="nav-link flex items-center gap-1.5">
+          <i data-lucide="github" style="width:14px;height:14px;"></i> GitHub
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-16">
+    <a href="/" class="nav-link flex items-center gap-1.5 text-sm mb-10 w-fit">
+      <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> All posts
+    </a>
+
+    <article>
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="tag">AI</span>
+          <span class="tag">Agents</span>
+          <time class="font-mono text-xs" style="color:var(--muted-foreground);">April 14, 2026</time>
+        </div>
+        <h1 class="text-4xl font-bold mb-4 leading-tight">Building an AI Agent from Scratch</h1>
+        <p class="text-lg" style="color:oklch(0.58 0 0);">Most AI agent tutorials start with LangChain. I started with a text file and a loop. Here's what I learned building one from the ground up — tool calling, memory, and all the things that break in production.</p>
+      </div>
+
+      <div class="border-b mb-10" style="border-color:var(--border);"></div>
+
+      <div class="prose">
+
+        <p>Everyone says you need a framework to build AI agents. LangChain, AutoGen, CrewAI — pick your poison. I spent a weekend trying all of them before realizing: I had no idea what was actually happening under the hood.</p>
+
+        <p>So I deleted everything and started with the bare minimum: a Python script, the Anthropic API, and a JSON file for memory.</p>
+
+        <h2>What even is an agent?</h2>
+
+        <p>Strip away the buzzwords and an AI agent is just this:</p>
+
+        <ol style="margin:0 0 1.25rem 1.5rem;list-style:decimal;">
+          <li style="margin-bottom:0.5rem;line-height:1.7;color:oklch(0.68 0 0);">Send a prompt to an LLM</li>
+          <li style="margin-bottom:0.5rem;line-height:1.7;color:oklch(0.68 0 0);">Parse the response</li>
+          <li style="margin-bottom:0.5rem;line-height:1.7;color:oklch(0.68 0 0);">Execute a tool if the model asked for one</li>
+          <li style="margin-bottom:0.5rem;line-height:1.7;color:oklch(0.68 0 0);">Feed the result back</li>
+          <li style="margin-bottom:0.5rem;line-height:1.7;color:oklch(0.68 0 0);">Repeat until done</li>
+        </ol>
+
+        <p>That's it. The loop is the agent. Everything else is tooling around that loop.</p>
+
+        <h2>The minimal implementation</h2>
+
+        <p>Here's the core loop in about 40 lines:</p>
+
+        <pre><code>import anthropic
+import json
+
+client = anthropic.Anthropic()
+
+def run_agent(task: str, tools: list, max_steps: int = 10):
+    messages = [{"role": "user", "content": task}]
+
+    for step in range(max_steps):
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=4096,
+            tools=tools,
+            messages=messages,
+        )
+
+        # Append assistant response
+        messages.append({"role": "assistant", "content": response.content})
+
+        if response.stop_reason == "end_turn":
+            # Model is done
+            return response.content[-1].text
+
+        if response.stop_reason == "tool_use":
+            # Execute all tool calls
+            tool_results = []
+            for block in response.content:
+                if block.type == "tool_use":
+                    result = execute_tool(block.name, block.input)
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": str(result),
+                    })
+            messages.append({"role": "user", "content": tool_results})
+
+    return "Max steps reached"</code></pre>
+
+        <p>That's your agent. No framework. No magic. Just a loop and the API.</p>
+
+        <h2>Tool calling is the hard part</h2>
+
+        <p>The loop is easy. The tools are where things get interesting — and where things break.</p>
+
+        <p>A tool in the Anthropic API is a JSON schema that tells the model what functions it can call and what parameters they take. When the model wants to use one, it returns a <code>tool_use</code> block instead of finishing. You execute the tool and feed the result back.</p>
+
+        <p>Things that will bite you:</p>
+
+        <ul>
+          <li><strong>Tool errors need to be returned as results, not raised as exceptions.</strong> If your tool throws and you don't catch it, the loop dies. Wrap everything in try/except and return the error as a string.</li>
+          <li><strong>Models will sometimes call tools that don't exist.</strong> Especially if your system prompt is vague. Add validation.</li>
+          <li><strong>The model will loop forever if the task is ambiguous.</strong> Set a max_steps and be aggressive about it in dev.</li>
+        </ul>
+
+        <h2>Memory: easier than you think</h2>
+
+        <p>For a personal agent that runs once a day, "memory" is just a JSON file that gets appended to the system prompt:</p>
+
+        <pre><code>def load_memory() -> str:
+    try:
+        with open("memory.json") as f:
+            facts = json.load(f)
+        return "## What I remember:\n" + "\n".join(f"- {f}" for f in facts)
+    except FileNotFoundError:
+        return ""
+
+system = f"""You are a helpful assistant.
+{load_memory()}
+"""</code></pre>
+
+        <p>For anything more complex, you need a vector store. But start here. Ship the simple thing first.</p>
+
+        <h2>What I learned</h2>
+
+        <blockquote>The framework is usually hiding something you need to understand anyway.</blockquote>
+
+        <p>Building from scratch forced me to actually understand what <code>stop_reason</code> means, why <code>tool_use_id</code> needs to match exactly, and why context window management matters in multi-step tasks.</p>
+
+        <p>I eventually went back to using frameworks — but now I know what they're doing, and I know when to reach past them.</p>
+
+      </div>
+    </article>
+
+    <!-- Nav between posts -->
+    <div class="border-t mt-16 pt-10 flex justify-between" style="border-color:var(--border);">
+      <div></div>
+      <a href="/posts/cloudflare-workers-good-parts.html" class="nav-link flex items-center gap-2 text-sm">
+        Next: Cloudflare Workers: The Good Parts <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+      </a>
+    </div>
+  </main>
+
+  <footer class="border-t mt-12" style="border-color:var(--border);">
+    <div class="max-w-4xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span class="font-mono text-xs" style="color:var(--muted-foreground);">© 2026 Itamar Cohen</span>
+      <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener" class="nav-link flex items-center gap-1.5 text-xs font-mono">
+        <i data-lucide="github" style="width:12px;height:12px;"></i> ItamarCoh3n
+      </a>
+    </div>
+  </footer>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
