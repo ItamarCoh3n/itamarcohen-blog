@@ -1,628 +1,344 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Itamar Cohen — Builder. Developer. Tinkerer.</title>
-  <meta name="description" content="Personal dev blog by Itamar Cohen — writing about AI, Cloudflare, self-hosting, and building things on the internet." />
-
-  <!-- Fonts -->
+  <title>Itamar Cohen — Developer Blog</title>
+  <meta name="description" content="Itamar Cohen — Builder, Developer, Tinkerer. Writing about AI, self-hosting, and the web." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            bg: '#0a0a0b',
-            surface: '#111113',
-            border: '#1f1f23',
-            muted: '#6b6b7b',
-            accent: '#7c6aff',
-          },
-          animation: {
-            'fade-up': 'fadeUp 0.6s ease forwards',
-            'fade-in': 'fadeIn 0.5s ease forwards',
-            'gradient': 'gradient 8s ease infinite',
-            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          },
-          keyframes: {
-            fadeUp: {
-              '0%': { opacity: '0', transform: 'translateY(20px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            fadeIn: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' },
-            },
-            gradient: {
-              '0%, 100%': { backgroundPosition: '0% 50%' },
-              '50%': { backgroundPosition: '100% 50%' },
-            },
-          },
-        },
-      },
-    }
-  </script>
-
   <style>
     :root {
-      --bg: oklch(10% 0.005 270);
-      --surface: oklch(12% 0.008 270);
-      --border: oklch(18% 0.010 270);
-      --text: oklch(95% 0.005 270);
-      --muted: oklch(55% 0.010 270);
-      --accent: oklch(60% 0.18 280);
-      --accent-glow: oklch(60% 0.18 280 / 0.15);
+      --background: oklch(0.095 0 0);
+      --foreground: oklch(0.97 0 0);
+      --primary: oklch(0.97 0 0);
+      --muted: oklch(0.18 0 0);
+      --muted-foreground: oklch(0.55 0 0);
+      --border: oklch(0.22 0 0);
+      --accent: oklch(0.65 0.18 250);
+      --radius: 0.625rem;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { box-sizing: border-box; }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .font-mono { font-family: var(--font-mono); }
 
-    /* Hero gradient */
-    .hero-glow {
-      position: absolute;
-      inset: 0;
+    /* Gradient hero */
+    .hero-gradient {
       background:
-        radial-gradient(ellipse 80% 50% at 50% -20%, oklch(60% 0.18 280 / 0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 50%, oklch(55% 0.16 240 / 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 40% at 20% 70%, oklch(58% 0.15 320 / 0.06) 0%, transparent 50%);
-      pointer-events: none;
+        radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.65 0.18 250 / 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 60%, oklch(0.65 0.15 290 / 0.08), transparent);
     }
 
     /* Animated gradient text */
     .gradient-text {
-      background: linear-gradient(135deg,
-        oklch(90% 0.05 270) 0%,
-        oklch(75% 0.15 280) 40%,
-        oklch(80% 0.10 240) 70%,
-        oklch(90% 0.05 270) 100%);
-      background-size: 200% 200%;
+      background: linear-gradient(135deg, oklch(0.97 0 0) 0%, oklch(0.65 0.18 250) 50%, oklch(0.75 0.15 280) 100%);
       -webkit-background-clip: text;
-      background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: gradient 6s ease infinite;
+      background-clip: text;
     }
 
-    /* Grid dots pattern */
-    .grid-dots {
-      background-image: radial-gradient(oklch(40% 0.01 270) 1px, transparent 1px);
-      background-size: 32px 32px;
-      mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 20%, transparent 70%);
+    /* Fade-in animations */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* Card hover */
     .post-card {
-      background: var(--surface);
       border: 1px solid var(--border);
-      transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      border-radius: var(--radius);
+      transition: border-color 200ms, transform 200ms, box-shadow 200ms;
     }
     .post-card:hover {
-      border-color: oklch(60% 0.18 280 / 0.4);
+      border-color: oklch(0.65 0.18 250 / 0.5);
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px oklch(60% 0.18 280 / 0.08);
+      box-shadow: 0 8px 32px oklch(0.65 0.18 250 / 0.08);
     }
-
-    /* Nav blur */
-    .nav-blur {
-      background: oklch(10% 0.005 270 / 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* Stagger animations */
-    .stagger-1 { animation: fadeUp 0.6s ease 0.1s both; }
-    .stagger-2 { animation: fadeUp 0.6s ease 0.2s both; }
-    .stagger-3 { animation: fadeUp 0.6s ease 0.3s both; }
-    .stagger-4 { animation: fadeUp 0.6s ease 0.4s both; }
-    .stagger-5 { animation: fadeUp 0.6s ease 0.5s both; }
-    .stagger-6 { animation: fadeUp 0.6s ease 0.6s both; }
 
     /* Tag pill */
     .tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 0.7rem;
-      background: oklch(60% 0.18 280 / 0.10);
-      color: oklch(75% 0.12 280);
-      border: 1px solid oklch(60% 0.18 280 / 0.2);
-      border-radius: 4px;
-      padding: 2px 8px;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: oklch(0.22 0 0);
+      color: oklch(0.65 0.18 250);
+      border: 1px solid oklch(0.65 0.18 250 / 0.25);
       letter-spacing: 0.02em;
     }
 
-    /* Tech stack pill */
-    .tech-pill {
+    /* Nav link */
+    .nav-link {
+      color: var(--muted-foreground);
+      font-size: 0.875rem;
+      transition: color 150ms;
+    }
+    .nav-link:hover { color: var(--foreground); }
+
+    /* Tech badge */
+    .tech-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: var(--surface);
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: border-color 0.2s, background 0.2s;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      color: oklch(0.7 0 0);
+      background: var(--muted);
+      transition: border-color 150ms, color 150ms;
     }
-    .tech-pill:hover {
-      border-color: oklch(60% 0.18 280 / 0.4);
-      background: oklch(60% 0.18 280 / 0.05);
+    .tech-badge:hover {
+      border-color: oklch(0.65 0.18 250 / 0.4);
+      color: var(--foreground);
     }
 
-    /* Link underline animation */
-    .animated-link {
-      position: relative;
-      text-decoration: none;
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--background); }
+    ::-webkit-scrollbar-thumb { background: oklch(0.3 0 0); border-radius: 3px; }
+
+    /* Grid line decoration */
+    .grid-lines {
+      background-image:
+        linear-gradient(oklch(0.22 0 0 / 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(0.22 0 0 / 0.4) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 100% at 50% 0%, black 40%, transparent 100%);
     }
-    .animated-link::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 0;
-      height: 1px;
-      background: oklch(75% 0.12 280);
-      transition: width 0.2s ease;
-    }
-    .animated-link:hover::after { width: 100%; }
   </style>
 </head>
-<body class="min-h-screen">
+<body>
 
   <!-- NAV -->
-  <nav class="nav-blur fixed top-0 left-0 right-0 z-50">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
-      <a href="/" class="font-semibold text-sm tracking-tight" style="color: var(--text);">
-        Itamar Cohen
+  <header class="sticky top-0 z-50 border-b" style="background:oklch(0.095 0 0 / 0.8);backdrop-filter:blur(12px);border-color:var(--border);">
+    <nav class="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="/" class="font-semibold text-sm tracking-tight" style="color:var(--foreground);">
+        itamarcohen<span style="color:oklch(0.65 0.18 250);">.com</span>
       </a>
-      <div class="flex items-center gap-1">
-        <a href="#posts" class="text-sm px-3 py-1.5 rounded-md transition-colors animated-link"
-           style="color: var(--muted);"
-           onmouseover="this.style.color='oklch(95% 0.005 270)'"
-           onmouseout="this.style.color='var(--muted)'">Blog</a>
-        <a href="#stack" class="text-sm px-3 py-1.5 rounded-md transition-colors animated-link"
-           style="color: var(--muted);"
-           onmouseover="this.style.color='oklch(95% 0.005 270)'"
-           onmouseout="this.style.color='var(--muted)'">Projects</a>
-        <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener"
-           class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border transition-all"
-           style="color: var(--muted); border-color: var(--border);"
-           onmouseover="this.style.borderColor='oklch(60% 0.18 280 / 0.4)'; this.style.color='oklch(95% 0.005 270)'"
-           onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--muted)'">
-          <i data-lucide="github" class="w-3.5 h-3.5"></i>
+      <div class="flex items-center gap-6">
+        <a href="#posts" class="nav-link">Blog</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener" class="nav-link flex items-center gap-1.5">
+          <i data-lucide="github" style="width:14px;height:14px;"></i>
           GitHub
         </a>
       </div>
-    </div>
-  </nav>
+    </nav>
+  </header>
 
-  <!-- HERO -->
-  <section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-14">
+  <main>
 
-    <!-- Background elements -->
-    <div class="grid-dots absolute inset-0 opacity-40"></div>
-    <div class="hero-glow"></div>
-
-    <!-- Floating orbs -->
-    <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full opacity-5"
-         style="background: radial-gradient(circle, oklch(60% 0.18 280), transparent 70%); animation: pulse 6s ease-in-out infinite;"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full opacity-5"
-         style="background: radial-gradient(circle, oklch(55% 0.16 240), transparent 70%); animation: pulse 8s ease-in-out infinite 2s;"></div>
-
-    <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
-
-      <!-- Badge -->
-      <div class="stagger-1 inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full text-xs font-mono"
-           style="background: oklch(60% 0.18 280 / 0.1); border: 1px solid oklch(60% 0.18 280 / 0.25); color: oklch(75% 0.12 280);">
-        <span class="w-1.5 h-1.5 rounded-full inline-block" style="background: oklch(65% 0.20 145); box-shadow: 0 0 6px oklch(65% 0.20 145 / 0.8);"></span>
-        Available for interesting projects
-      </div>
-
-      <!-- Headline -->
-      <h1 class="stagger-2 text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6 leading-none">
-        <span class="gradient-text">Builder.</span><br/>
-        <span style="color: var(--text);">Developer.</span><br/>
-        <span style="color: var(--muted);">Tinkerer.</span>
-      </h1>
-
-      <!-- Bio -->
-      <p class="stagger-3 text-base sm:text-lg max-w-xl mx-auto leading-relaxed mb-10"
-         style="color: var(--muted);">
-        I build things at the intersection of AI, infrastructure, and the open web.
-        Writing about what I learn along the way — from self-hosted setups to
-        production-grade systems.
-      </p>
-
-      <!-- CTAs -->
-      <div class="stagger-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-        <a href="#posts"
-           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
-           style="background: oklch(60% 0.18 280); color: white;"
-           onmouseover="this.style.background='oklch(55% 0.18 280)'; this.style.boxShadow='0 0 20px oklch(60% 0.18 280 / 0.3)'"
-           onmouseout="this.style.background='oklch(60% 0.18 280)'; this.style.boxShadow='none'">
-          Read the blog
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </a>
-        <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener"
-           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
-           style="background: var(--surface); border: 1px solid var(--border); color: var(--text);"
-           onmouseover="this.style.borderColor='oklch(60% 0.18 280 / 0.4)'"
-           onmouseout="this.style.borderColor='var(--border)'">
-          <i data-lucide="github" class="w-4 h-4"></i>
-          GitHub
-        </a>
-      </div>
-
-      <!-- Scroll indicator -->
-      <div class="stagger-5 absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5"
-           style="color: var(--muted);">
-        <span class="text-xs font-mono tracking-widest uppercase opacity-60">Scroll</span>
-        <i data-lucide="chevrons-down" class="w-4 h-4 opacity-60" style="animation: bounce 2s ease-in-out infinite;"></i>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- FEATURED POSTS -->
-  <section id="posts" class="py-24 px-4 sm:px-6">
-    <div class="max-w-5xl mx-auto">
-
-      <!-- Section header -->
-      <div class="mb-12">
-        <div class="inline-flex items-center gap-2 mb-3 text-xs font-mono"
-             style="color: oklch(75% 0.12 280);">
-          <i data-lucide="pen-line" class="w-3.5 h-3.5"></i>
-          WRITING
+    <!-- HERO -->
+    <section class="hero-gradient relative overflow-hidden" style="min-height:520px;">
+      <div class="grid-lines absolute inset-0 pointer-events-none"></div>
+      <div class="max-w-4xl mx-auto px-6 pt-24 pb-20 relative">
+        <div class="fade-up" style="transition-delay:0ms;">
+          <span class="tag mb-6 inline-block">Available for work</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" style="color: var(--text);">
-          Featured Posts
-        </h2>
-        <p class="mt-2 text-base" style="color: var(--muted);">
-          Deep dives into building, breaking, and understanding systems.
+        <h1 class="text-5xl sm:text-6xl font-bold tracking-tight mb-5 fade-up" style="transition-delay:80ms;line-height:1.1;">
+          <span class="gradient-text">Builder.</span><br />
+          Developer.<br />
+          <span style="color:oklch(0.45 0 0);">Tinkerer.</span>
+        </h1>
+        <p class="text-lg max-w-xl mb-8 fade-up" style="color:oklch(0.6 0 0);transition-delay:160ms;line-height:1.7;">
+          I build things on the internet — AI agents, self-hosted infrastructure,
+          and tools that make life easier. Writing about what I learn along the way.
         </p>
+        <div class="flex items-center gap-4 fade-up" style="transition-delay:240ms;">
+          <a href="#posts"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style="background:var(--foreground);color:var(--background);">
+            Read the blog
+            <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+          </a>
+          <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all nav-link"
+            style="border:1px solid var(--border);">
+            <i data-lucide="github" style="width:14px;height:14px;"></i>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- POSTS -->
+    <section id="posts" class="max-w-4xl mx-auto px-6 py-20">
+      <div class="flex items-center justify-between mb-10 fade-up">
+        <h2 class="text-xl font-semibold">Recent Posts</h2>
+        <a href="#" class="nav-link text-sm flex items-center gap-1">
+          All posts <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+        </a>
       </div>
 
-      <!-- Post cards -->
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="flex flex-col gap-4">
 
         <!-- Post 1 -->
-        <article class="post-card rounded-xl p-6 flex flex-col gap-4 cursor-pointer group stagger-1">
-          <div class="flex items-center justify-between">
-            <time class="text-xs font-mono" style="color: var(--muted);">Mar 14, 2026</time>
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors group-hover:bg-opacity-20"
-                 style="background: oklch(60% 0.18 280 / 0.12);">
-              <i data-lucide="cpu" class="w-4 h-4" style="color: oklch(75% 0.12 280);"></i>
+        <article class="post-card p-6 fade-up" style="transition-delay:40ms;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-3">
+                <time class="font-mono text-xs" style="color:var(--muted-foreground);">Apr 14, 2026</time>
+                <span class="tag">AI</span>
+                <span class="tag">Agents</span>
+              </div>
+              <h3 class="text-lg font-semibold mb-2 leading-snug">
+                Building an AI Agent from Scratch
+              </h3>
+              <p class="text-sm leading-relaxed" style="color:oklch(0.58 0 0);">
+                Most AI agent tutorials start with LangChain. I started with a text file and a loop.
+                Here's what I learned building one from the ground up — tool calling, memory, and all the things that break in production.
+              </p>
             </div>
-          </div>
-
-          <div>
-            <h3 class="text-base font-semibold mb-2 leading-snug transition-colors group-hover:text-white"
-                style="color: var(--text);">
-              Building an AI Agent from Scratch
-            </h3>
-            <p class="text-sm leading-relaxed" style="color: var(--muted);">
-              No frameworks, no magic. Just raw API calls, a loop, and a prompt.
-              Here's what I learned building a fully autonomous coding agent.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
-            <span class="tag">AI</span>
-            <span class="tag">agents</span>
-            <span class="tag">typescript</span>
-          </div>
-
-          <div class="flex items-center gap-1 text-xs font-medium transition-colors"
-               style="color: oklch(75% 0.12 280);">
-            Read more
-            <i data-lucide="arrow-right" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1"></i>
+            <i data-lucide="arrow-up-right" style="width:18px;height:18px;color:oklch(0.4 0 0);flex-shrink:0;margin-top:2px;"></i>
           </div>
         </article>
 
         <!-- Post 2 -->
-        <article class="post-card rounded-xl p-6 flex flex-col gap-4 cursor-pointer group stagger-2">
-          <div class="flex items-center justify-between">
-            <time class="text-xs font-mono" style="color: var(--muted);">Feb 28, 2026</time>
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center"
-                 style="background: oklch(60% 0.18 240 / 0.12);">
-              <i data-lucide="cloud-lightning" class="w-4 h-4" style="color: oklch(70% 0.14 240);"></i>
+        <article class="post-card p-6 fade-up" style="transition-delay:100ms;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-3">
+                <time class="font-mono text-xs" style="color:var(--muted-foreground);">Mar 28, 2026</time>
+                <span class="tag">Cloudflare</span>
+                <span class="tag">Edge</span>
+              </div>
+              <h3 class="text-lg font-semibold mb-2 leading-snug">
+                Cloudflare Workers: The Good Parts
+              </h3>
+              <p class="text-sm leading-relaxed" style="color:oklch(0.58 0 0);">
+                Workers are underrated. You can run code at the edge, store data in R2 and KV,
+                and route traffic globally — all without managing servers. Here's the mental model that unlocked it for me.
+              </p>
             </div>
-          </div>
-
-          <div>
-            <h3 class="text-base font-semibold mb-2 leading-snug transition-colors group-hover:text-white"
-                style="color: var(--text);">
-              Cloudflare Workers: The Good Parts
-            </h3>
-            <p class="text-sm leading-relaxed" style="color: var(--muted);">
-              After shipping a dozen Workers in production, I've found the patterns
-              that work and the traps to avoid. A practical guide.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
-            <span class="tag">cloudflare</span>
-            <span class="tag">edge</span>
-            <span class="tag">workers</span>
-          </div>
-
-          <div class="flex items-center gap-1 text-xs font-medium transition-colors"
-               style="color: oklch(75% 0.12 280);">
-            Read more
-            <i data-lucide="arrow-right" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1"></i>
+            <i data-lucide="arrow-up-right" style="width:18px;height:18px;color:oklch(0.4 0 0);flex-shrink:0;margin-top:2px;"></i>
           </div>
         </article>
 
         <!-- Post 3 -->
-        <article class="post-card rounded-xl p-6 flex flex-col gap-4 cursor-pointer group stagger-3">
-          <div class="flex items-center justify-between">
-            <time class="text-xs font-mono" style="color: var(--muted);">Jan 19, 2026</time>
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center"
-                 style="background: oklch(60% 0.18 160 / 0.12);">
-              <i data-lucide="server" class="w-4 h-4" style="color: oklch(65% 0.15 160);"></i>
+        <article class="post-card p-6 fade-up" style="transition-delay:160ms;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-3">
+                <time class="font-mono text-xs" style="color:var(--muted-foreground);">Feb 19, 2026</time>
+                <span class="tag">Self-hosting</span>
+                <span class="tag">DevOps</span>
+              </div>
+              <h3 class="text-lg font-semibold mb-2 leading-snug">
+                Why I Self-Host Everything
+              </h3>
+              <p class="text-sm leading-relaxed" style="color:oklch(0.58 0 0);">
+                n8n, Nextcloud, Vaultwarden, Gitea — my whole stack runs on a single VPS.
+                The cost is under $20/month. The control is priceless. This is how I set it all up with Docker and Cloudflare Tunnels.
+              </p>
             </div>
-          </div>
-
-          <div>
-            <h3 class="text-base font-semibold mb-2 leading-snug transition-colors group-hover:text-white"
-                style="color: var(--text);">
-              Why I Self-Host Everything
-            </h3>
-            <p class="text-sm leading-relaxed" style="color: var(--muted);">
-              Privacy, control, and a deeper understanding of the stack.
-              My home lab setup: what's running, what broke, and what I'd do differently.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
-            <span class="tag">self-hosted</span>
-            <span class="tag">docker</span>
-            <span class="tag">homelab</span>
-          </div>
-
-          <div class="flex items-center gap-1 text-xs font-medium transition-colors"
-               style="color: oklch(75% 0.12 280);">
-            Read more
-            <i data-lucide="arrow-right" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1"></i>
+            <i data-lucide="arrow-up-right" style="width:18px;height:18px;color:oklch(0.4 0 0);flex-shrink:0;margin-top:2px;"></i>
           </div>
         </article>
 
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- TECH STACK -->
-  <section id="stack" class="py-24 px-4 sm:px-6" style="border-top: 1px solid var(--border);">
-    <div class="max-w-5xl mx-auto">
-
-      <!-- Section header -->
-      <div class="mb-12">
-        <div class="inline-flex items-center gap-2 mb-3 text-xs font-mono"
-             style="color: oklch(75% 0.12 280);">
-          <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-          TOOLKIT
+    <!-- ABOUT -->
+    <section id="about" class="border-t" style="border-color:var(--border);">
+      <div class="max-w-4xl mx-auto px-6 py-20">
+        <div class="grid sm:grid-cols-3 gap-12">
+          <div class="sm:col-span-2 fade-up">
+            <h2 class="text-xl font-semibold mb-5">About</h2>
+            <p class="text-sm leading-relaxed mb-4" style="color:oklch(0.62 0 0);">
+              I'm Itamar Cohen — a developer obsessed with building things that actually work.
+              My stack leans heavily on TypeScript, Cloudflare, and whatever AI model gives me the
+              best results today.
+            </p>
+            <p class="text-sm leading-relaxed mb-8" style="color:oklch(0.62 0 0);">
+              When I'm not shipping code, I'm riding my Husqvarna 701 Enduro or tinkering with
+              3D printers. I write here about things I figure out — occasionally useful, always honest.
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <span class="tech-badge"><i data-lucide="code-2" style="width:12px;height:12px;"></i> TypeScript</span>
+              <span class="tech-badge"><i data-lucide="cloud" style="width:12px;height:12px;"></i> Cloudflare</span>
+              <span class="tech-badge"><i data-lucide="box" style="width:12px;height:12px;"></i> Docker</span>
+              <span class="tech-badge"><i data-lucide="cpu" style="width:12px;height:12px;"></i> Node.js</span>
+              <span class="tech-badge"><i data-lucide="bot" style="width:12px;height:12px;"></i> AI/LLMs</span>
+              <span class="tech-badge"><i data-lucide="server" style="width:12px;height:12px;"></i> Self-hosting</span>
+              <span class="tech-badge"><i data-lucide="git-branch" style="width:12px;height:12px;"></i> Git</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-5 fade-up" style="transition-delay:80ms;">
+            <div>
+              <h3 class="text-xs font-medium uppercase tracking-widest mb-3" style="color:var(--muted-foreground);">Links</h3>
+              <div class="flex flex-col gap-2">
+                <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener"
+                  class="nav-link flex items-center gap-2 text-sm">
+                  <i data-lucide="github" style="width:14px;height:14px;"></i> GitHub
+                </a>
+                <a href="mailto:hello@itamarcohen.com"
+                  class="nav-link flex items-center gap-2 text-sm">
+                  <i data-lucide="mail" style="width:14px;height:14px;"></i> Email
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" style="color: var(--text);">
-          Tech Stack
-        </h2>
-        <p class="mt-2 text-base" style="color: var(--muted);">
-          The tools I reach for when building.
-        </p>
       </div>
+    </section>
 
-      <!-- Stack grid -->
-      <div class="flex flex-wrap gap-3">
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" fill="oklch(65% 0.20 145 / 0.15)" stroke="oklch(65% 0.20 145)" stroke-width="1.5"/>
-            <path d="M8 12h8M12 8v8" stroke="oklch(65% 0.20 145)" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span style="color: var(--text);">Node.js</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="oklch(55% 0.18 240 / 0.8)">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-          <span style="color: var(--text);">TypeScript</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="18" height="18" rx="3" fill="oklch(60% 0.18 25 / 0.15)" stroke="oklch(60% 0.18 25)" stroke-width="1.5"/>
-            <path d="M7 8h10M7 12h10M7 16h6" stroke="oklch(60% 0.18 25)" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <span style="color: var(--text);">Cloudflare</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="oklch(55% 0.16 240 / 0.15)" stroke="oklch(55% 0.16 240)" stroke-width="1.5"/>
-            <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="oklch(55% 0.16 240)" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="9" cy="10" r="1" fill="oklch(55% 0.16 240)"/>
-            <circle cx="15" cy="10" r="1" fill="oklch(55% 0.16 240)"/>
-          </svg>
-          <span style="color: var(--text);">Docker</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="oklch(60% 0.18 280 / 0.15)" stroke="oklch(60% 0.18 280)" stroke-width="1.5"/>
-            <path d="M9 8l-4 4 4 4M15 8l4 4-4 4" stroke="oklch(60% 0.18 280)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span style="color: var(--text);">React</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="oklch(65% 0.15 50)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="oklch(65% 0.15 50 / 0.15)" stroke="oklch(65% 0.15 50)" stroke-width="1.5"/>
-            <path d="M8 8h8M8 12h5" stroke="oklch(65% 0.15 50)" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <span style="color: var(--text);">PostgreSQL</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <rect x="2" y="2" width="20" height="20" rx="4" fill="oklch(55% 0.14 350 / 0.15)" stroke="oklch(55% 0.14 350)" stroke-width="1.5"/>
-            <path d="M7 9l5 5 5-5" stroke="oklch(55% 0.14 350)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span style="color: var(--text);">Linux</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" fill="oklch(55% 0.18 200 / 0.15)" stroke="oklch(55% 0.18 200)" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M2 17l10 5 10-5" stroke="oklch(55% 0.18 200)" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M2 12l10 5 10-5" stroke="oklch(55% 0.18 200)" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>
-          <span style="color: var(--text);">Bun</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" fill="oklch(60% 0.15 220 / 0.15)" stroke="oklch(60% 0.15 220)" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>
-          <span style="color: var(--text);">Kubernetes</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9" fill="oklch(60% 0.18 280 / 0.15)" stroke="oklch(60% 0.18 280)" stroke-width="1.5"/>
-            <path d="M9 12l2 2 4-4" stroke="oklch(60% 0.18 280)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span style="color: var(--text);">Terraform</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="oklch(65% 0.18 160 / 0.15)" stroke="oklch(65% 0.18 160)" stroke-width="1.5"/>
-          </svg>
-          <span style="color: var(--text);">Go</span>
-        </div>
-
-        <div class="tech-pill">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="oklch(65% 0.15 50 / 0.15)" stroke="oklch(65% 0.15 50)" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>
-          <span style="color: var(--text);">Nix</span>
-        </div>
-
-      </div>
-
-      <!-- Code snippet decoration -->
-      <div class="mt-12 rounded-xl overflow-hidden" style="border: 1px solid var(--border); background: var(--surface);">
-        <div class="flex items-center gap-1.5 px-4 py-3" style="border-bottom: 1px solid var(--border);">
-          <div class="w-3 h-3 rounded-full" style="background: oklch(60% 0.18 25);"></div>
-          <div class="w-3 h-3 rounded-full" style="background: oklch(65% 0.18 90);"></div>
-          <div class="w-3 h-3 rounded-full" style="background: oklch(65% 0.20 145);"></div>
-          <span class="ml-2 text-xs font-mono" style="color: var(--muted);">itamar.ts</span>
-        </div>
-        <pre class="p-5 text-sm font-mono overflow-x-auto leading-relaxed"><code><span style="color: var(--muted);">// The person behind the keyboard</span>
-<span style="color: oklch(75% 0.12 280);">const</span> <span style="color: oklch(80% 0.14 180);">itamar</span> <span style="color: var(--text);">= {</span>
-  <span style="color: oklch(75% 0.12 110);">name</span><span style="color: var(--text);">:</span>       <span style="color: oklch(70% 0.15 50);">"Itamar Cohen"</span><span style="color: var(--text);">,</span>
-  <span style="color: oklch(75% 0.12 110);">role</span><span style="color: var(--text);">:</span>       <span style="color: oklch(70% 0.15 50);">"Full-stack engineer"</span><span style="color: var(--text);">,</span>
-  <span style="color: oklch(75% 0.12 110);">loves</span><span style="color: var(--text);">:      [</span><span style="color: oklch(70% 0.15 50);">"AI"</span><span style="color: var(--text);">,</span> <span style="color: oklch(70% 0.15 50);">"edge computing"</span><span style="color: var(--text);">,</span> <span style="color: oklch(70% 0.15 50);">"self-hosting"</span><span style="color: var(--text);">],</span>
-  <span style="color: oklch(75% 0.12 110);">building</span><span style="color: var(--text);">:   </span><span style="color: oklch(70% 0.15 50);">"things that matter"</span><span style="color: var(--text);">,</span>
-  <span style="color: oklch(75% 0.12 110);">available</span><span style="color: var(--text);">: </span><span style="color: oklch(65% 0.18 25);">true</span><span style="color: var(--text);">,</span>
-<span style="color: var(--text);">}</span></code></pre>
-      </div>
-
-    </div>
-  </section>
+  </main>
 
   <!-- FOOTER -->
-  <footer style="border-top: 1px solid var(--border);" class="py-12 px-4 sm:px-6">
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <span class="text-sm font-semibold" style="color: var(--text);">Itamar Cohen</span>
-        <span class="text-xs" style="color: var(--border);">·</span>
-        <span class="text-sm" style="color: var(--muted);">© 2026</span>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener"
-           class="flex items-center gap-1.5 text-sm transition-colors animated-link"
-           style="color: var(--muted);"
-           onmouseover="this.style.color='oklch(95% 0.005 270)'"
-           onmouseout="this.style.color='var(--muted)'">
-          <i data-lucide="github" class="w-4 h-4"></i>
-          ItamarCoh3n
-        </a>
-        <span class="text-xs" style="color: var(--border);">·</span>
-        <span class="text-xs font-mono" style="color: var(--muted);">
-          Built with ♥ and edge compute
-        </span>
-      </div>
+  <footer class="border-t" style="border-color:var(--border);">
+    <div class="max-w-4xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span class="font-mono text-xs" style="color:var(--muted-foreground);">
+        © 2026 Itamar Cohen
+      </span>
+      <a href="https://github.com/ItamarCoh3n" target="_blank" rel="noopener"
+        class="nav-link flex items-center gap-1.5 text-xs font-mono">
+        <i data-lucide="github" style="width:12px;height:12px;"></i>
+        ItamarCoh3n
+      </a>
     </div>
   </footer>
 
-  <!-- Scroll reveal observer -->
   <script>
     // Init Lucide icons
     lucide.createIcons();
 
-    // Intersection Observer for reveal animations
+    // Intersection Observer for fade-up animations
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-          observer.unobserve(entry.target);
+      entries.forEach(el => {
+        if (el.isIntersecting) {
+          el.target.classList.add('visible');
+          observer.unobserve(el.target);
         }
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    }, { threshold: 0.1 });
 
-    // Observe post cards and tech pills
-    document.querySelectorAll('.post-card, .tech-pill').forEach((el, i) => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(16px)';
-      el.style.transition = `opacity 0.5s ease ${i * 0.08}s, transform 0.5s ease ${i * 0.08}s`;
-      observer.observe(el);
-    });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-    // Smooth nav highlight on scroll
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('nav a[href^="#"]');
-
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        if (window.scrollY >= section.offsetTop - 100) {
-          current = section.getAttribute('id');
-        }
+    // Trigger hero elements immediately
+    setTimeout(() => {
+      document.querySelectorAll('.hero-gradient .fade-up').forEach(el => {
+        el.classList.add('visible');
       });
-      navLinks.forEach(link => {
-        link.style.color = link.getAttribute('href') === `#${current}`
-          ? 'oklch(95% 0.005 270)'
-          : 'var(--muted)';
-      });
-    }, { passive: true });
+    }, 100);
   </script>
-
 </body>
 </html>
